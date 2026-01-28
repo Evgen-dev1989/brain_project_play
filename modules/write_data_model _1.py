@@ -4,23 +4,11 @@ and saves it to a Django database model named Phone."""
 import os
 import time
 import sys
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
-import sys
-import os
 import re
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException
 
 
-import sys
-import os
-
+from playwright.sync_api import sync_playwright, TimeoutError
 project_root1 = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root1 not in sys.path:
     sys.path.insert(0, project_root1)
@@ -43,17 +31,32 @@ from get_characteristics_photos import get_characteristics_photos
 
 
 
-def search_product(driver, wait, query=None):
+def search_product():
     general = {}
 
+
+
+
+        
+    
     try:
-        overlay = driver.find_element(By.XPATH, "//div[contains(@class, 'modal') or contains(@class, 'overlay') or contains(@class, 'popup') or contains(@class, 'fancybox-active')]//button[contains(@class, 'close') or contains(@class, 'btn-close') or contains(@class, 'fancybox-close')]")
-        if overlay.is_displayed():
-            overlay.click()
-            time.sleep(0.5)
-    except NoSuchElementException:
-        print("No overlay found, continuing...")
-        overlay = None
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = browser.new_page()
+            page.goto("https://brain.com.ua/ukr/", timeout=1000)
+            time.sleep(2)
+            search_selector = "input[type='search'].quick-search-input"
+    except TimeoutError:
+        print("Время ожидания истекло!")
+
+    # try:
+    #     overlay = driver.find_element(By.XPATH, "//div[contains(@class, 'modal') or contains(@class, 'overlay') or contains(@class, 'popup') or contains(@class, 'fancybox-active')]//button[contains(@class, 'close') or contains(@class, 'btn-close') or contains(@class, 'fancybox-close')]")
+    #     if overlay.is_displayed():
+    #         overlay.click()
+    #         time.sleep(0.5)
+    # except NoSuchElementException:
+    #     print("No overlay found, continuing...")
+    #     overlay = None
 
 
     search_input = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[contains(@class, 'search-form') and contains(@class, 'header-search-form')]//input[@type='search' and contains(@class, 'quick-search-input')]")))
@@ -243,22 +246,8 @@ def search_product(driver, wait, query=None):
 
 
 def main():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--lang=ru")
-    chrome_options.add_argument("--start-maximized")
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-    driver.get("https://brain.com.ua/")
-    wait = WebDriverWait(driver, 10)
-    try:
-        search_product(driver, wait, "Apple iPhone 15 128GB Black")
-        get_characteristics_photos(driver, wait, "Apple iPhone 15 128GB Black")
-    finally:
-        driver.quit()
+  
 
     print("Data extraction completed.")
     
