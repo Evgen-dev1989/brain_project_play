@@ -30,7 +30,7 @@ from parser_app.models import Phone
 
 
 def search_product():
-
+    
     general = {}
         
     try:
@@ -46,6 +46,8 @@ def search_product():
             search_selector = "div.search-form.header-search-form input.quick-search-input[type='search']"
             inputs = page.query_selector_all(search_selector)
 
+    
+
             visible_inputs = [inp for inp in inputs if inp.is_visible()]
             if visible_inputs:
 
@@ -58,45 +60,70 @@ def search_product():
                 print("does not find visible search input")
                 browser.close()
                 return
-    
+
             try:
-                submit_buttons = page.query_selector_all("input[type='submit']")
-         
-                search_button = None
-                for btn in submit_buttons:
-                    if btn.is_visible() and btn.get_attribute('class') == 'search-button-first-form':
-                        search_button = btn
-                        break
-                if not search_button:
-           
-                    visible_buttons = [btn for btn in submit_buttons if btn.is_visible()]
-                    if visible_buttons:
-                        search_button = visible_buttons[0]
-                if search_button:
-                    search_button.click()
+                visible_inputs[0].press('Enter')
+                first_product_link = page.query_selector("div.product-wrapper a[href*='Mobilniy_telefon']")
+                if first_product_link:
+                    href = first_product_link.get_attribute('href')
+                    print("Переход по ссылке:", href)
+                    page.goto(href, timeout=15000)
+                    page.wait_for_timeout(2000)
+                    # Сохраняем HTML страницы продукта
+                    html_content = page.content()
+                    with open("brain_first_product.html", "w", encoding="utf-8") as f:
+                        f.write(html_content)
                 else:
-            
-                    browser.close()
-                    return
-            
-                page.wait_for_timeout(4000)
-                html_content = page.content()
-                with open("brain_search_result.html", "w", encoding="utf-8") as f:
-                    f.write(html_content)
-            
-                browser.close()
+                    print("Ссылка на первый продукт не найдена!")
+
+
             except Error as e:
-                print(f"Playwright error during search button click: {e}")
+                print(f"Error in {e}")
                 browser.close()
                 return
-
+            
     except Error as e:
         print(f"Playwright error page.goto https://brain.com.ua/ukr/: {e}")
 
-          
+        page.wait_for_timeout(3000)
+
+        first_product_link = page.query_selector("div.product-wrapper a[href*='Mobilniy_telefon']")
+
+        try:
+            page.wait_for_selector('div.br-pp-desc a[href*="Mobilniy_telefon_Apple_iPhone_15"]', timeout=10000)
+            first_product_link = page.query_selector('div.br-pp-desc a[href*="Mobilniy_telefon_Apple_iPhone_15"]')
+        except TimeoutError:
+            first_product_link = None
+
+        if first_product_link:
+            href = first_product_link.get_attribute('href')
+            print("Переход по ссылке:", href)
+            page.goto(href, timeout=15000)
+            page.wait_for_timeout(2000)
+
+            # html_content = page.content()
+            # with open("brain_first_product.html", "w", encoding="utf-8") as f:
+            #     f.write(html_content)
+        else:
+
+            all_links = page.query_selector_all('a')
+            for i, link in enumerate(all_links[:20]):
+                try:
+                    href = link.get_attribute('href')
+                    text = link.inner_text()
+                    outer_html = link.evaluate('el => el.outerHTML')
+                    print(f"[{i}] {href} | {text}\n    HTML: {outer_html[:200]}{'...' if len(outer_html) > 200 else ''}")
+                except Exception as e:
+                    print(f"[{i}] Ошибка чтения ссылки: {e}")
 
 
     
+
+
+
+    
+
+
 
 
 
