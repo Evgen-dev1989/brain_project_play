@@ -76,9 +76,9 @@ def search_product():
                 else:
                     print("Ссылка на первый продукт не найдена!")
 
-
             except Error as e:
                 print(f"Error in {e}")
+                first_product_link = None
                 browser.close()
                 return
             
@@ -100,22 +100,13 @@ def search_product():
             print("Переход по ссылке:", href)
             page.goto(href, timeout=15000)
             page.wait_for_timeout(2000)
+        else:
+            print("does not find link to first product after timeout!")
 
-            # html_content = page.content()
+            
+        # html_content = page.content()
             # with open("brain_first_product.html", "w", encoding="utf-8") as f:
             #     f.write(html_content)
-        else:
-
-            all_links = page.query_selector_all('a')
-            for i, link in enumerate(all_links[:20]):
-                try:
-                    href = link.get_attribute('href')
-                    text = link.inner_text()
-                    outer_html = link.evaluate('el => el.outerHTML')
-                    print(f"[{i}] {href} | {text}\n    HTML: {outer_html[:200]}{'...' if len(outer_html) > 200 else ''}")
-                except Exception as e:
-                    print(f"[{i}] Ошибка чтения ссылки: {e}")
-
 
     
 
