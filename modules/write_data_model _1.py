@@ -30,80 +30,69 @@ from parser_app.models import Phone
 
 
 def search_product():
-    
-    general = {}
-        
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=False)
             page = browser.new_page()
-            page.goto("https://brain.com.ua/ukr/", timeout=20000)
-            page.wait_for_timeout(3000)
-        
+            try:
+                page.goto("https://brain.com.ua/ukr/", timeout=20000)
+                page.wait_for_timeout(3000)
 
-            inputs = page.query_selector_all("input[type='search']")
+                inputs = page.query_selector_all("input[type='search']")
+                search_selector = "div.search-form.header-search-form input.quick-search-input[type='search']"
+                inputs = page.query_selector_all(search_selector)
 
-            search_selector = "div.search-form.header-search-form input.quick-search-input[type='search']"
-            inputs = page.query_selector_all(search_selector)
-
-    
-
-            visible_inputs = [inp for inp in inputs if inp.is_visible()]
-            if visible_inputs:
+                visible_inputs = [inp for inp in inputs if inp.is_visible()]
+                if visible_inputs:
+                    try:
+                        visible_inputs[0].fill("Apple iPhone 15 128GB Black")
+                    except Error as e:
+                        print(f"Error filling search input: {e}")
+                        visible_inputs = None
+                else:
+                    print("does not find visible search input")
+                    return
 
                 try:
-                    visible_inputs[0].fill("Apple iPhone 15 128GB Black")
+                    visible_inputs[0].press('Enter')
+                    # Явное ожидание появления блока с товарами (до 10 секунд)
+                    try:
+                        page.wait_for_selector('div.product-wrapper', timeout=10000)
+                    except TimeoutError:
+                        print("Блок с товарами не появился!")
+                    # Повторные попытки поиска ссылки на первый продукт
+                    first_product_link = None
+                    for attempt in range(3):
+                        first_product_link = page.query_selector("div.product-wrapper a[href*='Mobilniy_telefon']")
+                        if first_product_link:
+                            break
+                        else:
+                            page.wait_for_timeout(1500)
+                    if first_product_link:
+                        href = first_product_link.get_attribute('href')
+                        print("Переход по ссылке:", href)
+                        page.goto(href, timeout=15000)
+                        page.wait_for_timeout(2000)
+                
+                        # html_content = page.content()
+                        # with open("brain_first_product.html", "w", encoding="utf-8") as f:
+                        #     f.write(html_content)
+                    else:
+                        print("link to first product not found after retries.")
+           
                 except Error as e:
-                    print(f"Error filling search input: {e}")
-                    visible_inputs = None
-            else:
-                print("does not find visible search input")
-                browser.close()
-                return
-
-            try:
-                visible_inputs[0].press('Enter')
-                first_product_link = page.query_selector("div.product-wrapper a[href*='Mobilniy_telefon']")
-                if first_product_link:
-                    href = first_product_link.get_attribute('href')
-                    print("Переход по ссылке:", href)
-                    page.goto(href, timeout=15000)
-                    page.wait_for_timeout(2000)
-                    # Сохраняем HTML страницы продукта
-                    html_content = page.content()
-                    with open("brain_first_product.html", "w", encoding="utf-8") as f:
-                        f.write(html_content)
-                else:
-                    print("Ссылка на первый продукт не найдена!")
-
+                    print(f"Error in {e}")
+                    return
             except Error as e:
-                print(f"Error in {e}")
-                first_product_link = None
+                print(f"Playwright error page.goto https://brain.com.ua/ukr/: {e}")
+
+
+    finally:
+        if browser:
+            try:
                 browser.close()
-                return
-            
-    except Error as e:
-        print(f"Playwright error page.goto https://brain.com.ua/ukr/: {e}")
-
-        page.wait_for_timeout(3000)
-
-        first_product_link = page.query_selector("div.product-wrapper a[href*='Mobilniy_telefon']")
-
-        try:
-            page.wait_for_selector('div.br-pp-desc a[href*="Mobilniy_telefon_Apple_iPhone_15"]', timeout=10000)
-            first_product_link = page.query_selector('div.br-pp-desc a[href*="Mobilniy_telefon_Apple_iPhone_15"]')
-        except TimeoutError:
-            first_product_link = None
-
-        if first_product_link:
-            href = first_product_link.get_attribute('href')
-            print("Переход по ссылке:", href)
-            page.goto(href, timeout=15000)
-            page.wait_for_timeout(2000)
-        else:
-            print("does not find link to first product after timeout!")
-
-            
+            except Error as e:
+                print(f"Error in closing browser: {e}")
         # html_content = page.content()
             # with open("brain_first_product.html", "w", encoding="utf-8") as f:
             #     f.write(html_content)
