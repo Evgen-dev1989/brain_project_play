@@ -1,0 +1,39 @@
+создаем общую папку
+
+ставим Django py -m pip install Django==6.0.1
+
+подключаем PostgreSQL  pip install psycopg2
+
+в ней три папки modules и result, name_project при помощи django-admin startproject name_project .
+- name_project
+
+	название по имени домена с приставкой _project
+
+	- parser_app
+		базовое приложение для парсера всегда называется parser_app
+		внутри создаем models.py и выполняем миграции после заполнения models.py
+- modules
+
+	Все скрипты парсера должны лежать в папке modules
+		1_get_listings.py
+		2_get_info.py
+
+	load_django.py
+		import os
+		import sys
+		import django
+
+		# Додаємо шлях до проекту
+		sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'start_project')))
+
+		os.environ['DJANGO_SETTINGS_MODULE'] = 'start_project.settings'
+
+		django.setup()
+- results
+	В данную папку сохраняете результаты - спарсенные данные 
+		Дамп БД
+		Файл CSV
+
+pip install webdriver-manager
+from webdriver_manager.chrome import ChromeDriverManager
+
