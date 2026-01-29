@@ -100,7 +100,7 @@ def search_product():
                         product_name = None
 
 
-                    color = []
+                    colors = []
                     try:
     
                         page.wait_for_selector("div.series-colors-column", timeout=5000)
@@ -117,7 +117,8 @@ def search_product():
                                     color_page.goto(color_href, timeout=10000)
                                     color_page.wait_for_selector("h1.main-title", timeout=10000, state="attached")
                                     color_name = color_page.query_selector("h1.main-title").inner_text().strip()
-                                    color.append({"name": color_name, "url": color_href})
+                                    colors.append({"name": color_name, "url": color_href})
+                                    #print(colors)
                                 except Error as e:
                                     print(f"Error loading color page {color_href}: {e}")
                                 finally:
@@ -128,14 +129,14 @@ def search_product():
                         colors = None
       
 
-                    colors = []
+                    colors2 = []
                     for color in colors:
                         match = re.search(r'(\w+)\s*\(', color['name'])
                         if match:
                             color_name = match.group(1)
-                            colors.append(color_name)
-                    print(colors)
-                    general["colors"] = colors
+                            colors2.append(color_name)
+                    #print(colors2)
+                    general["colors"] = colors2
 
                     try:
                         memory_capacity = page.query_selector("div.stuff-series.stuff-series-characteristics.main-stuff-series-block.current-product-series").inner_text().strip()
@@ -181,8 +182,8 @@ def search_product():
                             if promo_price_span:
                                 promo_price = promo_price_span.inner_text().strip().replace(" ", "")
                     
-                        print(f"Обычная цена: {price}")
-                        print(f"Акционная цена: {promo_price}")
+                        # print(f"price: {price}")
+                        # print(f"promo price: {promo_price}")
                     except Error as e:
                         print(f"Error getting prices: {e}")
                         price = None
@@ -200,7 +201,7 @@ def search_product():
                                 code = code.query_selector("div.product-code-num").inner_text().strip()
                                
                             product_code = code
-                            print(product_code)
+                            #print(product_code)
                         else:
                             print("Product code block not found.")
                     except Error as e:
@@ -214,7 +215,7 @@ def search_product():
                         reviews_count = page.query_selector("div.main-comments-block.fast-navigation-comments-block a.reviews-count span")
                         if reviews_count:
                             number_of_reviews = reviews_count.inner_text().strip()
-                            print(f"number_of_reviews: {number_of_reviews}")
+                            #print(f"number_of_reviews: {number_of_reviews}")
                         else:
                             print("Reviews count not found.")
                     except Error as e:
@@ -238,7 +239,7 @@ def search_product():
                                     break
                             if screen_diagonal:
                                 break
-                        print("screen_diagonal:", screen_diagonal)
+                        #print("screen_diagonal:", screen_diagonal)
                     except Error as e:
                         print(f"Error getting manufacturer: {e}")
                         screen_diagonal = None
@@ -259,28 +260,26 @@ def search_product():
                                     break
                             if display_resolution :
                                 break
-                        print("display_resolution :", display_resolution )
+                        #print("display_resolution :", display_resolution )
                     except Error as e:
                         print(f"Error getting manufacturer: {e}")
                         display_resolution  = None
                     general["display_resolution"]  = display_resolution
 
-                    characteristics  = None
+                    characteristics = {}
                     try:
                         chr_blocks = page.query_selector_all("div.br-pr-chr-item")
                         for block in chr_blocks:
-                          
                             spans = block.query_selector_all("span")
-                            for i in range(len(spans) - 1):
+                            # Идём по парам: 0-1, 2-3, 4-5, ...
+                            for i in range(0, len(spans) - 1, 2):
                                 key = spans[i].inner_text().strip().lower()
                                 value = spans[i + 1].inner_text().strip()
-                                print(key, value)
-            
-                        #print("characteristics :", characteristics )
+                                characteristics[key] = value
                     except Error as e:
-                        print(f"Error getting manufacturer: {e}")
-                        characteristics  = None
-                    general["characteristics"]  = characteristics
+                        print(f"Error getting characteristics: {e}")
+                        characteristics = None
+                    general["characteristics"] = characteristics
 
 
                     photo_links = []
@@ -292,10 +291,10 @@ def search_product():
                                 src = img.get_attribute('src')
                                 if src:
                                     photo_links.append(src)
-                        print("Ссылки на фото:", photo_links)
                     except Exception as e:
                         print("Ошибка при получении ссылок на фото:", e)
                     general["photo_links"] = photo_links
+                    #print("Ссылки на фото:", photo_links)
 
                     
 
@@ -320,12 +319,12 @@ def search_product():
                 pass 
     
 
+    max_key_len = max(len(key) for key in general)
+    for key, value in characteristics.items():
+        print(f"  {key.capitalize():<{max_key_len}} : {value}")
 
 
-
-    for key, value in general.items():
-        print(f"  {key}: {value}")
-
+   
     try:
 
         phone = Phone.objects.get_or_create(
@@ -336,7 +335,7 @@ def search_product():
             price = price,
             manufacturer = manufacturer,
             memory_capacity = memory_capacity,
-            colors = colors,
+            colors = colors2,
             photos = photo_links,
             screen_diagonal = screen_diagonal,
             display_resolution = display_resolution,
