@@ -55,12 +55,12 @@ def search_product():
 
                 try:
                     visible_inputs[0].press('Enter')
-                    # Явное ожидание появления блока с товарами (до 10 секунд)
+            
                     try:
                         page.wait_for_selector('div.product-wrapper', timeout=10000)
                     except TimeoutError:
-                        print("Блок с товарами не появился!")
-                    # Повторные попытки поиска ссылки на первый продукт
+                        print("Block with products did not appear in time.")
+     
                     first_product_link = None
                     for attempt in range(3):
                         first_product_link = page.query_selector("div.product-wrapper a[href*='Mobilniy_telefon']")
@@ -70,7 +70,7 @@ def search_product():
                             page.wait_for_timeout(1500)
                     if first_product_link:
                         href = first_product_link.get_attribute('href')
-                        print("Переход по ссылке:", href)
+                        #print("Переход по ссылке:", href)
                         page.goto(href, timeout=15000)
                         page.wait_for_timeout(2000)
                 
@@ -79,20 +79,90 @@ def search_product():
                         #     f.write(html_content)
                     else:
                         print("link to first product not found after retries.")
-           
+
                 except Error as e:
-                    print(f"Error in {e}")
+                    print(f"Error visible_inputs[0].press('Enter') {e}")
                     return
+                    
+
+                try:
+          
+                    page.goto(href, timeout=15000)
+                    page.wait_for_timeout(2000)
+
+                    try:
+                        product_name = page.query_selector("h1.main-title").inner_text().strip()
+                        #print(f"Product Name: {product_name}")
+                    except Error as e:
+                        print(f"Error getting product name: {e}")
+                        product_name = None
+
+
+                    colors = []
+                    try:
+    
+                        page.wait_for_selector("div.series-colors-column", timeout=5000)
+                        color_items = page.query_selector_all("div.series-colors-column div.series-item.series-color a")
+                        if not color_items:
+                            print("No color items found.")
+                        for color_link in color_items:
+                            color_href = color_link.get_attribute("href")
+                            if color_href:
+
+                                color_context = browser.new_context()
+                                color_page = color_context.new_page()
+                                try:
+                                    color_page.goto(color_href, timeout=10000)
+                                    color_page.wait_for_selector("h1.main-title", timeout=10000, state="attached")
+                                    color_name = color_page.query_selector("h1.main-title").inner_text().strip()
+                                    colors.append({"name": color_name, "url": color_href})
+                                except Error as e:
+                                    print(f"Error loading color page {color_href}: {e}")
+                                finally:
+                                    color_page.close()
+                                    color_context.close()
+                    except Error as e:
+                        print(f"Error extracting colors: {e}")
+                        colors = None
+
+                    colors_finished = []
+                    for color in colors:
+                        match = re.search(r'(\w+)\s*\(', color['name'])
+                        if match:
+                            color_name = match.group(1)
+                            colors_finished.append(color_name)
+                    #print(colors_finished)
+
+
+                    try:
+                        memory_capacity = page.query_selector("h1.main-title").inner_text().strip()
+                        #print(f"Product Name: {product_name}")
+                    except Error as e:
+                        print(f"Error getting product name: {e}")
+                        memory_capacity = None
+
+
+
+
+
+
+
+                except TimeoutError as e:
+                        print(f"Doesn`t load page.goto(href, timeout=15000): {e}")
+                        product_name = None
+
             except Error as e:
                 print(f"Playwright error page.goto https://brain.com.ua/ukr/: {e}")
+
+                  
 
 
     finally:
         if browser:
             try:
                 browser.close()
-            except Error as e:
-                print(f"Error in closing browser: {e}")
+            except Exception:
+                pass 
         # html_content = page.content()
             # with open("brain_first_product.html", "w", encoding="utf-8") as f:
             #     f.write(html_content)
@@ -100,6 +170,20 @@ def search_product():
     
 
 
+#     memory_capacity = JSONField(null=True, blank=True)
+#     manufacturer = models.CharField(max_length=255, null=True)   
+#     price = models.CharField(max_length=100, null=True)    
+#     promotional_price = models.CharField(max_length=100, null=True)      
+#     product_code = models.CharField(max_length=255, null=True, unique=True)
+#     number_of_reviews = models.CharField(max_length=255, null=True)   
+#     screen_diagonal = models.CharField(max_length=255, null=True)         
+#     display_resolution = models.CharField(max_length=50, null=True)       
+#     characteristics = JSONField(null=True, blank=True)                   
+
+
+#     photos = JSONField(null=True, blank=True, help_text="Ссылки на все фото товара")  
+#     link = models.URLField(null=True, blank=True)            
+#     status = models.CharField(max_length=50, default="New", null=True) 
 
     
 
