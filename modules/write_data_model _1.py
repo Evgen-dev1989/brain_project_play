@@ -319,11 +319,8 @@ def search_product():
                 pass 
     
 
-    max_key_len = max(len(key) for key in general)
-    for key, value in characteristics.items():
-        print(f"  {key.capitalize():<{max_key_len}} : {value}")
-
-
+    for key, val in general.items():
+        print(f'{key} : {val}')
    
     try:
 
