@@ -98,48 +98,68 @@ def search_product():
                         product_name = None
 
 
-                    colors = []
-                    try:
+                    # colors = []
+                    # try:
     
-                        page.wait_for_selector("div.series-colors-column", timeout=5000)
-                        color_items = page.query_selector_all("div.series-colors-column div.series-item.series-color a")
-                        if not color_items:
-                            print("No color items found.")
-                        for color_link in color_items:
-                            color_href = color_link.get_attribute("href")
-                            if color_href:
+                    #     page.wait_for_selector("div.series-colors-column", timeout=5000)
+                    #     color_items = page.query_selector_all("div.series-colors-column div.series-item.series-color a")
+                    #     if not color_items:
+                    #         print("No color items found.")
+                    #     for color_link in color_items:
+                    #         color_href = color_link.get_attribute("href")
+                    #         if color_href:
 
-                                color_context = browser.new_context()
-                                color_page = color_context.new_page()
-                                try:
-                                    color_page.goto(color_href, timeout=10000)
-                                    color_page.wait_for_selector("h1.main-title", timeout=10000, state="attached")
-                                    color_name = color_page.query_selector("h1.main-title").inner_text().strip()
-                                    colors.append({"name": color_name, "url": color_href})
-                                except Error as e:
-                                    print(f"Error loading color page {color_href}: {e}")
-                                finally:
-                                    color_page.close()
-                                    color_context.close()
-                    except Error as e:
-                        print(f"Error extracting colors: {e}")
-                        colors = None
+                    #             color_context = browser.new_context()
+                    #             color_page = color_context.new_page()
+                    #             try:
+                    #                 color_page.goto(color_href, timeout=10000)
+                    #                 color_page.wait_for_selector("h1.main-title", timeout=10000, state="attached")
+                    #                 color_name = color_page.query_selector("h1.main-title").inner_text().strip()
+                    #                 colors.append({"name": color_name, "url": color_href})
+                    #             except Error as e:
+                    #                 print(f"Error loading color page {color_href}: {e}")
+                    #             finally:
+                    #                 color_page.close()
+                    #                 color_context.close()
+                    # except Error as e:
+                    #     print(f"Error extracting colors: {e}")
+                    #     colors = None
 
-                    colors_finished = []
-                    for color in colors:
-                        match = re.search(r'(\w+)\s*\(', color['name'])
-                        if match:
-                            color_name = match.group(1)
-                            colors_finished.append(color_name)
-                    #print(colors_finished)
+                    # colors_finished = []
+                    # for color in colors:
+                    #     match = re.search(r'(\w+)\s*\(', color['name'])
+                    #     if match:
+                    #         color_name = match.group(1)
+                    #         colors_finished.append(color_name)
+                    # print(colors_finished)
 
 
                     try:
-                        memory_capacity = page.query_selector("h1.main-title").inner_text().strip()
-                        #print(f"Product Name: {product_name}")
+                        memory_capacity = page.query_selector("div.stuff-series.stuff-series-characteristics.main-stuff-series-block.current-product-series").inner_text().strip()
+                        #print(f"memory_capacity: {memory_capacity}")
                     except Error as e:
                         print(f"Error getting product name: {e}")
                         memory_capacity = None
+
+                    try:
+                        manufacturer = None
+                        chr_blocks = page.query_selector_all("div.br-pr-chr-item")
+                        for block in chr_blocks:
+                          
+                            spans = block.query_selector_all("span")
+                            for i in range(len(spans) - 1):
+                                key = spans[i].inner_text().strip().lower()
+                                value = spans[i + 1].inner_text().strip()
+                        
+                                if any(word in key for word in ["виробник", "manufacturer", "fabricante", "fabricant", "hersteller", "producente", "производитель"]):
+                                    manufacturer = value
+                                    break
+                            if manufacturer:
+                                break
+                        #print("Производитель:", manufacturer)
+                    except Error as e:
+                        print(f"Error getting manufacturer: {e}")
+                        manufacturer = None
 
 
 
@@ -154,7 +174,6 @@ def search_product():
             except Error as e:
                 print(f"Playwright error page.goto https://brain.com.ua/ukr/: {e}")
 
-                  
 
 
     finally:
@@ -163,14 +182,10 @@ def search_product():
                 browser.close()
             except Exception:
                 pass 
-        # html_content = page.content()
-            # with open("brain_first_product.html", "w", encoding="utf-8") as f:
-            #     f.write(html_content)
-
     
 
 
-#     memory_capacity = JSONField(null=True, blank=True)
+
 #     manufacturer = models.CharField(max_length=255, null=True)   
 #     price = models.CharField(max_length=100, null=True)    
 #     promotional_price = models.CharField(max_length=100, null=True)      
