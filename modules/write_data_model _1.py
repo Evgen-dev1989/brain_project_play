@@ -187,13 +187,77 @@ def search_product():
                     #     promo_price = None
 
 
-                    try:
-                        memory_capacity = page.query_selector("div.stuff-series.stuff-series-characteristics.main-stuff-series-block.current-product-series").inner_text().strip()
-                        #print(f"memory_capacity: {memory_capacity}")
-                    except Error as e:
-                        print(f"Error getting product name: {e}")
-                        memory_capacity = None
+                    # try:
+                    #     product_code = page.query_selector_all("div.br-pr-code.br-code-block")
+               
+                    #     if product_code:
+                    #         for code in product_code:
+                    #             code = code.query_selector("div.product-code-num").inner_text().strip()
+                               
+                    #         product_code = code
+                    #         print(product_code)
+                    #     else:
+                    #         print("Product code block not found.")
+                    # except Error as e:
+                    #     print(f"Error getting product code: {e}")
+                    #     product_code = None
 
+
+                    # try:
+                    #     reviews_count = page.query_selector("div.main-comments-block.fast-navigation-comments-block a.reviews-count span")
+                    #     if reviews_count:
+                    #         number_of_reviews = reviews_count.inner_text().strip()
+                    #         print(f"number_of_reviews: {number_of_reviews}")
+                    #     else:
+                    #         print("Reviews count not found.")
+                    # except Error as e:
+                    #     print(f"Error getting product name: {e}")
+                    #     number_of_reviews = None
+
+                    # try:
+                    #     screen_diagonal = None
+                    #     chr_blocks = page.query_selector_all("div.br-pr-chr-item")
+                    #     for block in chr_blocks:
+                          
+                    #         spans = block.query_selector_all("span")
+                    #         for i in range(len(spans) - 1):
+                    #             key = spans[i].inner_text().strip().lower()
+                    #             value = spans[i + 1].inner_text().strip()
+                        
+                    #             if any(word in key for word in ["діагональ", "диагональ"]):
+                    #                 screen_diagonal = value
+                    #                 break
+                    #         if screen_diagonal:
+                    #             break
+                    #     print("screen_diagonal:", screen_diagonal)
+                    # except Error as e:
+                    #     print(f"Error getting manufacturer: {e}")
+                    #     screen_diagonal = None
+
+
+                    # try:
+                    #     display_resolution  = None
+                    #     chr_blocks = page.query_selector_all("div.br-pr-chr-item")
+                    #     for block in chr_blocks:
+                          
+                    #         spans = block.query_selector_all("span")
+                    #         for i in range(len(spans) - 1):
+                    #             key = spans[i].inner_text().strip().lower()
+                    #             value = spans[i + 1].inner_text().strip()
+                    #             #print(key, value)
+                    #             if "разреш" in key or "роздільн" in key:
+                    #                 display_resolution  = value
+                    #                 break
+                    #         if display_resolution :
+                    #             break
+                    #     print("display_resolution :", display_resolution )
+                    # except Error as e:
+                    #     print(f"Error getting manufacturer: {e}")
+                    #     display_resolution  = None
+
+
+
+                    
 
 
 
@@ -218,10 +282,10 @@ def search_product():
 
 
  
-#     promotional_price = models.CharField(max_length=100, null=True)      
-#     product_code = models.CharField(max_length=255, null=True, unique=True)
-#     number_of_reviews = models.CharField(max_length=255, null=True)   
-#     screen_diagonal = models.CharField(max_length=255, null=True)         
+   
+
+  
+      
 #     display_resolution = models.CharField(max_length=50, null=True)       
 #     characteristics = JSONField(null=True, blank=True)                   
 
