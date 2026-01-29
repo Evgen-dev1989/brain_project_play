@@ -141,26 +141,58 @@ def search_product():
                         print(f"Error getting product name: {e}")
                         memory_capacity = None
 
-                    try:
-                        manufacturer = None
-                        chr_blocks = page.query_selector_all("div.br-pr-chr-item")
-                        for block in chr_blocks:
+                    # try:
+                    #     manufacturer = None
+                    #     chr_blocks = page.query_selector_all("div.br-pr-chr-item")
+                    #     for block in chr_blocks:
                           
-                            spans = block.query_selector_all("span")
-                            for i in range(len(spans) - 1):
-                                key = spans[i].inner_text().strip().lower()
-                                value = spans[i + 1].inner_text().strip()
+                    #         spans = block.query_selector_all("span")
+                    #         for i in range(len(spans) - 1):
+                    #             key = spans[i].inner_text().strip().lower()
+                    #             value = spans[i + 1].inner_text().strip()
                         
-                                if any(word in key for word in ["виробник", "manufacturer", "fabricante", "fabricant", "hersteller", "producente", "производитель"]):
-                                    manufacturer = value
-                                    break
-                            if manufacturer:
-                                break
-                        #print("Производитель:", manufacturer)
-                    except Error as e:
-                        print(f"Error getting manufacturer: {e}")
-                        manufacturer = None
+                    #             if any(word in key for word in ["виробник", "manufacturer", "fabricante", "fabricant", "hersteller", "producente", "производитель"]):
+                    #                 manufacturer = value
+                    #                 break
+                    #         if manufacturer:
+                    #             break
+                    #     #print("Производитель:", manufacturer)
+                    # except Error as e:
+                    #     print(f"Error getting manufacturer: {e}")
+                    #     manufacturer = None
+                    
 
+                    # try:
+                    #     price = None
+                    #     promo_price = None
+                    
+         
+                    #     price_block = page.query_selector("div.br-pr-price.main-price-block")
+                    #     if price_block:
+                         
+                    #         old_price_span = price_block.query_selector("div.br-pr-op .price-wrapper span")
+                    #         if old_price_span:
+                    #             price = old_price_span.inner_text().strip().replace(" ", "")
+                    
+      
+                    #         promo_price_span = price_block.query_selector("div.br-pr-np .price-wrapper span")
+                    #         if promo_price_span:
+                    #             promo_price = promo_price_span.inner_text().strip().replace(" ", "")
+                    
+                    #     print(f"Обычная цена: {price}")
+                    #     print(f"Акционная цена: {promo_price}")
+                    # except Error as e:
+                    #     print(f"Error getting prices: {e}")
+                    #     price = None
+                    #     promo_price = None
+
+
+                    try:
+                        memory_capacity = page.query_selector("div.stuff-series.stuff-series-characteristics.main-stuff-series-block.current-product-series").inner_text().strip()
+                        #print(f"memory_capacity: {memory_capacity}")
+                    except Error as e:
+                        print(f"Error getting product name: {e}")
+                        memory_capacity = None
 
 
 
@@ -185,9 +217,7 @@ def search_product():
     
 
 
-
-#     manufacturer = models.CharField(max_length=255, null=True)   
-#     price = models.CharField(max_length=100, null=True)    
+ 
 #     promotional_price = models.CharField(max_length=100, null=True)      
 #     product_code = models.CharField(max_length=255, null=True, unique=True)
 #     number_of_reviews = models.CharField(max_length=255, null=True)   
